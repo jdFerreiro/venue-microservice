@@ -1,0 +1,188 @@
+
+import React, { useEffect, useState } from 'react';
+import { fetchResourceList } from '../services/api';
+import {
+  Box,
+  Typography,
+  Button,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  IconButton,
+  CircularProgress,
+  Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Snackbar
+} from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import TheatreCreatePage from './TheatreCreatePage';
+import TheatreEditPage from './TheatreEditPage';
+import { deleteResource } from '../services/api';
+  const [deleteId, setDeleteId] = useState(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const handleOpenDelete = (id) => {
+    setDeleteId(id);
+    setConfirmDelete(true);
+  };
+  const handleCloseDelete = () => {
+    setConfirmDelete(false);
+    setDeleteId(null);
+  };
+  const handleConfirmDelete = async () => {
+    setDeleteLoading(true);
+    try {
+      await deleteResource('teatro', deleteId);
+      setSnackbar({ open: true, message: 'Teatro eliminado correctamente', severity: 'success' });
+      fetchList();
+    } catch (err) {
+      setSnackbar({ open: true, message: 'Error al eliminar teatro', severity: 'error' });
+    } finally {
+      setDeleteLoading(false);
+      handleCloseDelete();
+    }
+  };
+
+
+function TheatresMasterPage() {
+  const [theatres, setTheatres] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [openCreate, setOpenCreate] = useState(false);
+  const [openEdit, setOpenEdit] = useState(false);
+  const [editId, setEditId] = useState(null);
+
+  const fetchList = () => {
+    setLoading(true);
+    fetchResourceList('teatro')
+      .then(setTheatres)
+      .catch(setError)
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchList();
+    // eslint-disable-next-line
+  }, []);
+
+  const handleOpenCreate = () => setOpenCreate(true);
+  const handleCloseCreate = () => {
+    setOpenCreate(false);
+    fetchList();
+  };
+  const handleOpenEdit = (id) => {
+    setEditId(id);
+    setOpenEdit(true);
+  };
+  const handleCloseEdit = () => {
+    setOpenEdit(false);
+    setEditId(null);
+    fetchList();
+  };
+
+  if (loading) return (
+    <Box display="flex" justifyContent="center" alignItems="center" minHeight="40vh">
+      <CircularProgress />
+    </Box>
+  );
+  if (error) return (
+    <Box m={2}><Alert severity="error">Error: {error.message}</Alert></Box>
+  );
+
+  return (
+    <Box m={3}>
+      <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
+        <Typography variant="h4">Teatros</Typography>
+        <Button variant="contained" color="primary" startIcon={<AddIcon />} onClick={handleOpenCreate}>
+          Agregar Teatro
+        </Button>
+      </Box>
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>ID</TableCell>
+              <TableCell>Nombre</TableCell>
+              <TableCell align="center">Acciones</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {theatres.map(theatre => (
+              <TableRow key={theatre.id}>
+                <TableCell>{theatre.id}</TableCell>
+                <TableCell>{theatre.name}</TableCell>
+                <TableCell align="center">
+                  <IconButton color="primary" title="Editar" onClick={() => handleOpenEdit(theatre.id)}>
+                    <EditIcon />
+                  </IconButton>
+                  <IconButton color="error" title="Eliminar" onClick={() => handleOpenDelete(theatre.id)}>
+                    <DeleteIcon />
+                  </IconButton>
+      {/* Diálogo de confirmación de eliminación */}
+      <Dialog open={confirmDelete} onClose={handleCloseDelete}>
+        <DialogTitle>¿Eliminar teatro?</DialogTitle>
+        <DialogContent>¿Estás seguro de que deseas eliminar este teatro? Esta acción no se puede deshacer.</DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDelete} color="primary" disabled={deleteLoading}>Cancelar</Button>
+          <Button onClick={handleConfirmDelete} color="error" disabled={deleteLoading}>
+            {deleteLoading ? 'Eliminando...' : 'Eliminar'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        message={snackbar.message}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      {/* Diálogo para crear */}
+      <Dialog open={openCreate} onClose={handleCloseCreate} maxWidth="sm" fullWidth>
+        <DialogTitle>Crear Teatro</DialogTitle>
+        <DialogContent>
+          <TheatreCreatePage />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseCreate}>Cerrar</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Diálogo para editar */}
+      <Dialog open={openEdit} onClose={handleCloseEdit} maxWidth="sm" fullWidth>
+        <DialogTitle>Editar Teatro</DialogTitle>
+        <DialogContent>
+          {/* Se pasa el id como prop y se usa en TheatreEditPage */}
+          <TheatreEditPageWrapper id={editId} />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseEdit}>Cerrar</Button>
+        </DialogActions>
+      </Dialog>
+    </Box>
+  );
+}
+
+// Wrapper para pasar id como prop en vez de usar useParams
+function TheatreEditPageWrapper({ id }) {
+  return <TheatreEditPage id={id} />;
+}
+
+export default TheatresMasterPage;
