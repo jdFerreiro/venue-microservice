@@ -16,7 +16,8 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Alert
+  Alert,
+  Tooltip
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -42,7 +43,6 @@ function EstadosSectorMasterPage() {
     } catch (err) {
       setError(err);
     } finally {
-      setLoading(false);
     }
   };
 
@@ -66,9 +66,11 @@ function EstadosSectorMasterPage() {
       <Paper elevation={3} sx={{ p: 3 }}>
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
           <Typography variant="h5">Estados de Sector</Typography>
-          <Button variant="contained" startIcon={<AddIcon />} onClick={() => setOpenCreate(true)}>
-            Nuevo Estado
-          </Button>
+          <Tooltip title="Agregar" arrow>
+            <IconButton color="primary" onClick={() => setOpenCreate(true)}>
+              <AddIcon />
+            </IconButton>
+          </Tooltip>
         </Box>
         {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
         {error && <Alert severity="error" sx={{ mb: 2 }}>{error.message}</Alert>}
@@ -76,7 +78,7 @@ function EstadosSectorMasterPage() {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>ID</TableCell>
+                {/* <TableCell>ID</TableCell> */}
                 <TableCell>Nombre</TableCell>
                 <TableCell>Descripción</TableCell>
                 <TableCell>Acciones</TableCell>
@@ -85,7 +87,7 @@ function EstadosSectorMasterPage() {
             <TableBody>
               {estados.map((estado) => (
                 <TableRow key={estado.id}>
-                  <TableCell>{estado.id}</TableCell>
+                  {/* <TableCell>{estado.id}</TableCell> */}
                   <TableCell>{estado.nombre}</TableCell>
                   <TableCell>{estado.descripcion}</TableCell>
                   <TableCell>

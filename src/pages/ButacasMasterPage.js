@@ -91,9 +91,13 @@ function ButacasMasterPage() {
     <Box m={3}>
       <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
         <Typography variant="h4">Butacas</Typography>
-        <Button variant="contained" color="primary" startIcon={<AddIcon />} onClick={handleOpenCreate} disabled={!selectedSector}>
-          Agregar Butaca
-        </Button>
+        <Tooltip title="Agregar" arrow>
+          <span>
+            <IconButton color="primary" onClick={handleOpenCreate} disabled={!selectedSector}>
+              <AddIcon />
+            </IconButton>
+          </span>
+        </Tooltip>
       </Box>
       <FormControl fullWidth sx={{ mb: 3 }}>
         <InputLabel id="sector-select-label">Selecciona un sector</InputLabel>
@@ -113,7 +117,7 @@ function ButacasMasterPage() {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>ID</TableCell>
+              {/* <TableCell>ID</TableCell> */}
               <TableCell>Nombre</TableCell>
               <TableCell>Estado</TableCell>
               <TableCell>Descripción de Estado</TableCell>
@@ -125,7 +129,7 @@ function ButacasMasterPage() {
               const estado = estadosButaca.find(e => e.id === butaca.estadoButacaId);
               return (
                 <TableRow key={butaca.id}>
-                  <TableCell>{butaca.id}</TableCell>
+                  {/* <TableCell>{butaca.id}</TableCell> */}
                   <TableCell>{butaca.name}</TableCell>
                   <TableCell>{estado ? estado.nombre : '-'}</TableCell>
                   <TableCell>{estado ? estado.descripcion : '-'}</TableCell>
@@ -144,7 +148,6 @@ function ButacasMasterPage() {
         </Table>
       </TableContainer>
 
-      {/* Diálogo para crear */}
       <Dialog open={openCreate} onClose={handleCloseCreate} maxWidth="sm" fullWidth>
         <DialogTitle>Crear Butaca</DialogTitle>
         <DialogContent>
@@ -164,6 +167,22 @@ function ButacasMasterPage() {
         <DialogActions>
           <Button onClick={handleCloseEdit}>Cerrar</Button>
         </DialogActions>
+      </Dialog>
+
+      {/* Diálogo para crear */}
+      <Dialog open={openCreate} onClose={handleCloseCreate} maxWidth="sm" fullWidth>
+        <DialogTitle>Crear Butaca</DialogTitle>
+        <DialogContent>
+          <ButacaCreatePage onCancel={handleCloseCreate} sectorId={selectedSector} estadosButaca={estadosButaca} />
+        </DialogContent>
+      </Dialog>
+
+      {/* Diálogo para editar */}
+      <Dialog open={openEdit} onClose={handleCloseEdit} maxWidth="sm" fullWidth>
+        <DialogTitle>Editar Butaca</DialogTitle>
+        <DialogContent>
+          <ButacaEditPage id={editId} onCancel={handleCloseEdit} sectorId={selectedSector} estadosButaca={estadosButaca} />
+        </DialogContent>
       </Dialog>
 
       {/* Diálogo de confirmación de eliminación */}

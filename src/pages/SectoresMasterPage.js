@@ -22,7 +22,8 @@ import {
   FormControl,
   InputLabel,
   Select,
-  MenuItem
+  MenuItem,
+  Tooltip
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -117,9 +118,13 @@ function SectoresMasterPage() {
     <Box m={3}>
       <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
         <Typography variant="h4">Sectores</Typography>
-        <Button variant="contained" color="primary" startIcon={<AddIcon />} onClick={handleOpenCreate} disabled={!selectedSala}>
-          Agregar Sector
-        </Button>
+        <Tooltip title="Agregar" arrow>
+          <span>
+            <IconButton color="primary" onClick={handleOpenCreate} disabled={!selectedSala}>
+              <AddIcon />
+            </IconButton>
+          </span>
+        </Tooltip>
       </Box>
       <FormControl fullWidth sx={{ mb: 3 }}>
         <InputLabel id="sala-select-label">Selecciona una sala</InputLabel>
@@ -139,7 +144,7 @@ function SectoresMasterPage() {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>ID</TableCell>
+              {/* <TableCell>ID</TableCell> */}
               <TableCell>Nombre</TableCell>
               <TableCell align="center">Acciones</TableCell>
             </TableRow>
@@ -147,7 +152,7 @@ function SectoresMasterPage() {
           <TableBody>
             {sectores.map(sector => (
               <TableRow key={sector.id}>
-                <TableCell>{sector.id}</TableCell>
+                {/* <TableCell>{sector.id}</TableCell> */}
                 <TableCell>{sector.name}</TableCell>
                 <TableCell align="center">
                   <IconButton color="primary" title="Editar" onClick={() => handleOpenEdit(sector.id)}>
@@ -164,7 +169,6 @@ function SectoresMasterPage() {
       </TableContainer>
 
 
-      {/* Diálogo para crear */}
       <Dialog open={openCreate} onClose={handleCloseCreate} maxWidth="sm" fullWidth>
         <DialogTitle>Crear Sector</DialogTitle>
         <DialogContent>
@@ -184,6 +188,22 @@ function SectoresMasterPage() {
         <DialogActions>
           <Button onClick={handleCloseEdit}>Cerrar</Button>
         </DialogActions>
+      </Dialog>
+
+      {/* Diálogo para crear */}
+      <Dialog open={openCreate} onClose={handleCloseCreate} maxWidth="sm" fullWidth>
+        <DialogTitle>Crear Sector</DialogTitle>
+        <DialogContent>
+          <SectorCreatePage onCancel={handleCloseCreate} salaId={selectedSala} />
+        </DialogContent>
+      </Dialog>
+
+      {/* Diálogo para editar */}
+      <Dialog open={openEdit} onClose={handleCloseEdit} maxWidth="sm" fullWidth>
+        <DialogTitle>Editar Sector</DialogTitle>
+        <DialogContent>
+          <SectorEditPage id={editId} onCancel={handleCloseEdit} salaId={selectedSala} />
+        </DialogContent>
       </Dialog>
 
       {/* Diálogo de confirmación de eliminación */}

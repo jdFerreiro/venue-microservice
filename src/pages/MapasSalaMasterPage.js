@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { fetchResourceList, deleteResource } from '../services/api';
 import {
-  Box, Typography, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton, CircularProgress, Alert, Dialog, DialogTitle, DialogContent, DialogActions, Snackbar, FormControl, InputLabel, Select, MenuItem
+  Box, Typography, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton, CircularProgress, Alert, Dialog, DialogTitle, DialogContent, DialogActions, Snackbar, FormControl, InputLabel, Select, MenuItem, Tooltip
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -96,9 +96,13 @@ function MapasSalaMasterPage() {
     <Box m={3}>
       <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
         <Typography variant="h4">Mapas de Sala</Typography>
-        <Button variant="contained" color="primary" startIcon={<AddIcon />} onClick={handleOpenCreate} disabled={!selectedSala}>
-          Agregar Mapa
-        </Button>
+        <Tooltip title="Agregar" arrow>
+          <span>
+            <IconButton color="primary" onClick={handleOpenCreate} disabled={!selectedSala}>
+              <AddIcon />
+            </IconButton>
+          </span>
+        </Tooltip>
       </Box>
       <FormControl fullWidth sx={{ mb: 3 }}>
         <InputLabel id="sala-select-label">Selecciona una sala</InputLabel>
@@ -118,7 +122,7 @@ function MapasSalaMasterPage() {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>ID</TableCell>
+              {/* <TableCell>ID</TableCell> */}
               <TableCell>Nombre</TableCell>
               <TableCell>Imagen</TableCell>
               <TableCell align="center">Acciones</TableCell>
@@ -127,7 +131,7 @@ function MapasSalaMasterPage() {
           <TableBody>
             {mapas.map(mapa => (
               <TableRow key={mapa.id}>
-                <TableCell>{mapa.id}</TableCell>
+                {/* <TableCell>{mapa.id}</TableCell> */}
                 <TableCell>{mapa.nombre}</TableCell>
                 <TableCell>
                   {mapa.imagenBase64
@@ -150,7 +154,6 @@ function MapasSalaMasterPage() {
         </Table>
       </TableContainer>
 
-      {/* Diálogo para crear */}
       <Dialog open={openCreate} onClose={handleCloseCreate} maxWidth="sm" fullWidth>
         <DialogTitle>Crear Mapa</DialogTitle>
         <DialogContent>
@@ -170,6 +173,22 @@ function MapasSalaMasterPage() {
         <DialogActions>
           <Button onClick={handleCloseEdit}>Cerrar</Button>
         </DialogActions>
+      </Dialog>
+
+      {/* Diálogo para crear */}
+      <Dialog open={openCreate} onClose={handleCloseCreate} maxWidth="sm" fullWidth>
+        <DialogTitle>Crear Mapa</DialogTitle>
+        <DialogContent>
+          <MapaSalaCreatePage onCancel={handleCloseCreate} salaId={selectedSala} />
+        </DialogContent>
+      </Dialog>
+
+      {/* Diálogo para editar */}
+      <Dialog open={openEdit} onClose={handleCloseEdit} maxWidth="sm" fullWidth>
+        <DialogTitle>Editar Mapa</DialogTitle>
+        <DialogContent>
+          <MapaSalaEditPage id={editId} onCancel={handleCloseEdit} salaId={selectedSala} />
+        </DialogContent>
       </Dialog>
 
       {/* Diálogo de confirmación de eliminación */}

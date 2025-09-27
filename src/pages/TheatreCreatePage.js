@@ -1,6 +1,7 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createTeatro } from '../services/api';
+import { fetchClubs } from '../services/clubs';
 import {
   Box,
   Typography,
@@ -11,16 +12,34 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions
+  DialogActions,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  CircularProgress,
+  ListItemIcon,
+  ListItemText
 } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 
+
 function TheatreCreatePage({ onCancel }) {
-  const [form, setForm] = useState({ name: '' });
+  const [form, setForm] = useState({ name: '', clubId: '' });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
   const [confirmCancel, setConfirmCancel] = useState(false);
+  const [clubs, setClubs] = useState([]);
+  const [loadingClubs, setLoadingClubs] = useState(true);
+
+  useEffect(() => {
+    setLoadingClubs(true);
+    fetchClubs()
+      .then(setClubs)
+      .catch(() => setClubs([]))
+      .finally(() => setLoadingClubs(false));
+  }, []);
 
   const handleChange = e => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -34,7 +53,7 @@ function TheatreCreatePage({ onCancel }) {
     try {
       await createTeatro(form);
       setSuccess(true);
-      setForm({ name: '' });
+      setForm({ name: '', clubId: '' });
     } catch (err) {
       setError(err);
     } finally {
@@ -65,6 +84,36 @@ function TheatreCreatePage({ onCancel }) {
             margin="normal"
             required
           />
+          <FormControl fullWidth margin="normal" required>
+            <InputLabel id="club-select-label">Club/Empresa</InputLabel>
+            <Select
+              labelId="club-select-label"
+              name="clubId"
+              value={form.clubId}
+              label="Club/Empresa"
+              onChange={handleChange}
+              disabled={loadingClubs}
+            >
+              <MenuItem value=""><em>Seleccione un club</em></MenuItem>
+              {clubs.map(club => (
+                <MenuItem key={club.id} value={club.id}>
+                  <ListItemIcon>
+                    {club.logo ? (
+                      <img
+                        src={club.logo.startsWith('data:') ? club.logo : `data:image/*;base64,${club.logo}`}
+                        alt={club.name}
+                        style={{ width: 32, height: 32, objectFit: 'contain', borderRadius: 4 }}
+                      />
+                    ) : (
+                      <Box sx={{ width: 32, height: 32, bgcolor: '#eee', borderRadius: 4 }} />
+                    )}
+                  </ListItemIcon>
+                  <ListItemText primary={club.name} />
+                </MenuItem>
+              ))}
+            </Select>
+            {loadingClubs && <CircularProgress size={20} sx={{ ml: 2 }} />}
+          </FormControl>
           <Box mt={2} display="flex" justifyContent="flex-end" gap={1}>
             <Button
               variant="outlined"

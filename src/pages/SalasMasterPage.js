@@ -22,7 +22,8 @@ import {
   FormControl,
   InputLabel,
   Select,
-  MenuItem
+  MenuItem,
+  Tooltip
 } from '@mui/material';
 import SalaCreatePage from './SalaCreatePage';
 import SalaEditPage from './SalaEditPage';
@@ -122,9 +123,13 @@ function SalasMasterPage() {
     <Box m={3}>
       <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
         <Typography variant="h4">Salas</Typography>
-        <Button variant="contained" color="primary" startIcon={<AddIcon />} onClick={handleOpenCreate} disabled={!selectedTheatre}>
-          Agregar Sala
-        </Button>
+        <Tooltip title="Agregar" arrow>
+          <span>
+            <IconButton color="primary" onClick={handleOpenCreate} disabled={!selectedTheatre}>
+              <AddIcon />
+            </IconButton>
+          </span>
+        </Tooltip>
       </Box>
       <FormControl fullWidth sx={{ mb: 3 }}>
         <InputLabel id="theatre-select-label">Selecciona un teatro</InputLabel>
@@ -144,7 +149,7 @@ function SalasMasterPage() {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>ID</TableCell>
+              {/* <TableCell>ID</TableCell> */}
               <TableCell>Nombre</TableCell>
               <TableCell align="center">Acciones</TableCell>
             </TableRow>
@@ -152,7 +157,7 @@ function SalasMasterPage() {
           <TableBody>
             {salas.map(sala => (
               <TableRow key={sala.id}>
-                <TableCell>{sala.id}</TableCell>
+                {/* <TableCell>{sala.id}</TableCell> */}
                 <TableCell>{sala.name}</TableCell>
                 <TableCell align="center">
                   <IconButton color="primary" title="Editar" onClick={() => handleOpenEdit(sala.id)}>
@@ -168,7 +173,6 @@ function SalasMasterPage() {
         </Table>
       </TableContainer>
 
-      {/* Diálogo para crear */}
       <Dialog open={openCreate} onClose={handleCloseCreate} maxWidth="sm" fullWidth>
         <DialogTitle>Crear Sala</DialogTitle>
         <DialogContent>
@@ -188,6 +192,22 @@ function SalasMasterPage() {
         <DialogActions>
           <Button onClick={handleCloseEdit}>Cerrar</Button>
         </DialogActions>
+      </Dialog>
+
+      {/* Diálogo para crear */}
+      <Dialog open={openCreate} onClose={handleCloseCreate} maxWidth="sm" fullWidth>
+        <DialogTitle>Crear Sala</DialogTitle>
+        <DialogContent>
+          <SalaCreatePage onCancel={handleCloseCreate} teatroId={selectedTheatre} />
+        </DialogContent>
+      </Dialog>
+
+      {/* Diálogo para editar */}
+      <Dialog open={openEdit} onClose={handleCloseEdit} maxWidth="sm" fullWidth>
+        <DialogTitle>Editar Sala</DialogTitle>
+        <DialogContent>
+          <SalaEditPage id={editId} onCancel={handleCloseEdit} teatroId={selectedTheatre} />
+        </DialogContent>
       </Dialog>
 
       {/* Diálogo de confirmación de eliminación */}

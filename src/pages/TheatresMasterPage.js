@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { fetchResourceList } from '../services/api';
 import {
@@ -19,7 +18,8 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Snackbar
+  Snackbar,
+  Tooltip
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -27,18 +27,29 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import TheatreCreatePage from './TheatreCreatePage';
 import TheatreEditPage from './TheatreEditPage';
 import { deleteResource } from '../services/api';
+
+function TheatresMasterPage() {
+  const [theatres, setTheatres] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [openCreate, setOpenCreate] = useState(false);
+  const [openEdit, setOpenEdit] = useState(false);
+  const [editId, setEditId] = useState(null);
   const [deleteId, setDeleteId] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+
   const handleOpenDelete = (id) => {
     setDeleteId(id);
     setConfirmDelete(true);
   };
+
   const handleCloseDelete = () => {
     setConfirmDelete(false);
     setDeleteId(null);
   };
+
   const handleConfirmDelete = async () => {
     setDeleteLoading(true);
     try {
@@ -52,15 +63,6 @@ import { deleteResource } from '../services/api';
       handleCloseDelete();
     }
   };
-
-
-function TheatresMasterPage() {
-  const [theatres, setTheatres] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [openCreate, setOpenCreate] = useState(false);
-  const [openEdit, setOpenEdit] = useState(false);
-  const [editId, setEditId] = useState(null);
 
   const fetchList = () => {
     setLoading(true);
@@ -103,15 +105,17 @@ function TheatresMasterPage() {
     <Box m={3}>
       <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
         <Typography variant="h4">Teatros</Typography>
-        <Button variant="contained" color="primary" startIcon={<AddIcon />} onClick={handleOpenCreate}>
-          Agregar Teatro
-        </Button>
+        <Tooltip title="Agregar" arrow>
+          <IconButton color="primary" onClick={handleOpenCreate}>
+            <AddIcon />
+          </IconButton>
+        </Tooltip>
       </Box>
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>ID</TableCell>
+              {/* <TableCell>ID</TableCell> */}
               <TableCell>Nombre</TableCell>
               <TableCell align="center">Acciones</TableCell>
             </TableRow>
@@ -119,7 +123,7 @@ function TheatresMasterPage() {
           <TableBody>
             {theatres.map(theatre => (
               <TableRow key={theatre.id}>
-                <TableCell>{theatre.id}</TableCell>
+                {/* <TableCell>{theatre.id}</TableCell> */}
                 <TableCell>{theatre.name}</TableCell>
                 <TableCell align="center">
                   <IconButton color="primary" title="Editar" onClick={() => handleOpenEdit(theatre.id)}>
@@ -128,6 +132,52 @@ function TheatresMasterPage() {
                   <IconButton color="error" title="Eliminar" onClick={() => handleOpenDelete(theatre.id)}>
                     <DeleteIcon />
                   </IconButton>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      <Dialog open={openCreate} onClose={handleCloseCreate} maxWidth="sm" fullWidth>
+        <DialogTitle>Crear Teatro</DialogTitle>
+        <DialogContent>
+          <TheatreCreatePage onCancel={handleCloseCreate} />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseCreate}>Cerrar</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Diálogo para editar */}
+      <Dialog open={openEdit} onClose={handleCloseEdit} maxWidth="sm" fullWidth>
+        <DialogTitle>Editar Teatro</DialogTitle>
+        <DialogContent>
+          {/* Se pasa el id como prop y se usa en TheatreEditPage */}
+          <TheatreEditPageWrapper id={editId} />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseEdit}>Cerrar</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Diálogo para crear */}
+      <Dialog open={openCreate} onClose={handleCloseCreate} maxWidth="sm" fullWidth>
+        <DialogTitle>Crear Teatro</DialogTitle>
+        <DialogContent>
+          <TheatreCreatePage onCancel={handleCloseCreate} />
+        </DialogContent>
+      </Dialog>
+
+      {/* Diálogo para editar */}
+      <Dialog open={openEdit} onClose={handleCloseEdit} maxWidth="sm" fullWidth>
+        <DialogTitle>Editar Teatro</DialogTitle>
+        <DialogContent>
+          {/* Se pasa el id como prop y se usa en TheatreEditPage */}
+          <TheatreEditPageWrapper id={editId} />
+        </DialogContent>
+      </Dialog>
+
       {/* Diálogo de confirmación de eliminación */}
       <Dialog open={confirmDelete} onClose={handleCloseDelete}>
         <DialogTitle>¿Eliminar teatro?</DialogTitle>
@@ -147,35 +197,6 @@ function TheatresMasterPage() {
         message={snackbar.message}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       />
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-
-      {/* Diálogo para crear */}
-      <Dialog open={openCreate} onClose={handleCloseCreate} maxWidth="sm" fullWidth>
-        <DialogTitle>Crear Teatro</DialogTitle>
-        <DialogContent>
-          <TheatreCreatePage />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseCreate}>Cerrar</Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Diálogo para editar */}
-      <Dialog open={openEdit} onClose={handleCloseEdit} maxWidth="sm" fullWidth>
-        <DialogTitle>Editar Teatro</DialogTitle>
-        <DialogContent>
-          {/* Se pasa el id como prop y se usa en TheatreEditPage */}
-          <TheatreEditPageWrapper id={editId} />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseEdit}>Cerrar</Button>
-        </DialogActions>
-      </Dialog>
     </Box>
   );
 }
