@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { createSala } from '../services/api';
+import { createSala, fetchResourceList } from '../services/api';
 import {
   Box,
   Typography,
@@ -14,26 +14,46 @@ import {
 } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 
-function SalaCreatePage({ onCancel }) {
+function SalaCreatePage({ onCancel, teatroId }) {
   const [form, setForm] = useState({ name: '' });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
   const [confirmCancel, setConfirmCancel] = useState(false);
+  const [nameError, setNameError] = useState('');
+  const [salas, setSalas] = useState([]);
+
+  React.useEffect(() => {
+    // Cargar salas existentes para validar duplicados
+    fetchResourceList('sala').then(setSalas);
+  }, []);
 
   const handleChange = e => {
     setForm({ ...form, [e.target.name]: e.target.value });
+    if (e.target.name === 'name') setNameError('');
   };
 
   const handleSubmit = async e => {
     e.preventDefault();
-    setSaving(true);
+    setNameError('');
     setError(null);
     setSuccess(false);
+    // Validar nombre vacío
+    if (!form.name.trim()) {
+      setNameError('El nombre es obligatorio');
+      return;
+    }
+    // Validar duplicado
+    if (salas.some(s => s.teatroId === teatroId && s.name.trim().toLowerCase() === form.name.trim().toLowerCase())) {
+      setNameError('Ya existe una sala con ese nombre en este teatro');
+      return;
+    }
+    setSaving(true);
     try {
-      await createSala(form);
+      await createSala({ ...form, teatroId });
       setSuccess(true);
       setForm({ name: '' });
+      if (onCancel) onCancel(); // Cierra el diálogo al crear con éxito
     } catch (err) {
       setError(err);
     } finally {
@@ -62,7 +82,8 @@ function SalaCreatePage({ onCancel }) {
             onChange={handleChange}
             fullWidth
             margin="normal"
-            required
+            error={!!nameError}
+            helperText={nameError}
           />
           <Box mt={2} display="flex" justifyContent="flex-end" gap={1}>
             <Button

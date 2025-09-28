@@ -3,7 +3,6 @@ const URL_BASE = process.env.REACT_APP_IDENTITY_API_BASE_URL;
 
 export async function fetchClubs() {
   const token = sessionStorage.getItem('uToken');
-  console.log('Token enviado en Authorization:', token);
   const res = await fetch(`${URL_BASE}/clubs`, {
     headers: {
       'Content-Type': 'application/json',

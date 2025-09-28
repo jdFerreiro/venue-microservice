@@ -49,11 +49,12 @@ function SalasMasterPage() {
 
   // Cargar teatros
   useEffect(() => {
-    fetchResourceList('teatro').then(setTheatres);
+    fetchResourceList('teatro').then(setTheatres).finally(() => setLoading(false));
   }, []);
 
   // Cargar salas filtradas por teatro
   const fetchList = () => {
+    console.log('Fetching salas for teatroId:', selectedTheatre);
     if (!selectedTheatre) {
       setSalas([]);
       setLoading(false);
@@ -61,7 +62,7 @@ function SalasMasterPage() {
     }
     setLoading(true);
     fetchResourceList('sala')
-      .then(data => setSalas(data.filter(s => s.teatroId === selectedTheatre)))
+      .then(data => setSalas(data.filter(s => s.teatro && s.teatro.id === selectedTheatre)))
       .catch(setError)
       .finally(() => setLoading(false));
   };
@@ -95,6 +96,7 @@ function SalasMasterPage() {
   const handleCloseDelete = () => {
     setConfirmDelete(false);
     setDeleteId(null);
+    fetchList();
   };
   const handleConfirmDelete = async () => {
     setDeleteLoading(true);
@@ -110,7 +112,7 @@ function SalasMasterPage() {
     }
   };
 
-  if (loading) return (
+  if (loading && theatres.length === 0) return (
     <Box display="flex" justifyContent="center" alignItems="center" minHeight="40vh">
       <CircularProgress />
     </Box>

@@ -19,15 +19,29 @@ import {
   MenuItem,
   CircularProgress,
   ListItemIcon,
-  ListItemText
+  ListItemText,
+  FormControlLabel,
+  Switch
 } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 
 
-function TheatreCreatePage({ onCancel }) {
-  const [form, setForm] = useState({ name: '', clubId: '' });
+function TheatreCreatePage({ onCancel, onUnauthorized }) {
+  const [form, setForm] = useState({
+    name: '',
+    description: '',
+    address: '',
+    city: '',
+    country: '',
+    contactName: '',
+    contactEmail: '',
+    contactPhone: '',
+    clubId: '',
+    isactive: true
+  });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
+  const [fieldErrors, setFieldErrors] = useState({});
   const [success, setSuccess] = useState(false);
   const [confirmCancel, setConfirmCancel] = useState(false);
   const [clubs, setClubs] = useState([]);
@@ -42,7 +56,11 @@ function TheatreCreatePage({ onCancel }) {
   }, []);
 
   const handleChange = e => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value, type, checked } = e.target;
+    setForm({
+      ...form,
+      [name]: type === 'checkbox' ? checked : value
+    });
   };
 
   const handleSubmit = async e => {
@@ -50,11 +68,66 @@ function TheatreCreatePage({ onCancel }) {
     setSaving(true);
     setError(null);
     setSuccess(false);
+    // Validación mínima
+    const requiredFields = ['name', 'address', 'city', 'country', 'contactName', 'contactPhone', 'clubId'];
+    const newFieldErrors = {};
+    for (const field of requiredFields) {
+      if (!form[field] || (typeof form[field] === 'string' && form[field].trim() === '')) {
+        newFieldErrors[field] = 'Este campo es obligatorio';
+      }
+    }
+    // Validación de formato de email si se ingresó
+    if (form.contactEmail && form.contactEmail.trim() !== '') {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(form.contactEmail)) {
+        newFieldErrors.contactEmail = 'El email no tiene un formato válido';
+      }
+    }
+    // Validación de formato internacional para teléfono si se ingresó
+    if (form.contactPhone && form.contactPhone.trim() !== '') {
+      // Formato internacional: +[código][número], mínimo 8 dígitos, máximo 15
+      const phoneRegex = /^\+[1-9]\d{7,14}$/;
+      if (!phoneRegex.test(form.contactPhone)) {
+        newFieldErrors.contactPhone = 'El teléfono debe tener formato internacional, por ejemplo: +34123456789';
+      }
+    }
+    setFieldErrors(newFieldErrors);
+    if (Object.keys(newFieldErrors).length > 0) {
+      setError(new Error('Por favor completa todos los campos obligatorios y corrige los errores.'));
+      setSaving(false);
+      return;
+    }
     try {
-      await createTeatro(form);
+      // Solo filtrar undefined/null, pero address siempre debe ir aunque sea string vacío
+      const payload = Object.fromEntries(
+        Object.entries(form)
+          .filter(([k, v]) => v !== undefined && v !== null || k === 'address')
+      );
+      if (!('address' in payload)) payload.address = '';
+      await createTeatro(payload);
       setSuccess(true);
-      setForm({ name: '', clubId: '' });
+      if (onCancel) {
+        setTimeout(() => {
+          onCancel();
+        }, 500); // Da un pequeño tiempo para mostrar el mensaje de éxito si existe
+      }
+      setForm({
+        name: '',
+        description: '',
+        address: '',
+        city: '',
+        country: '',
+        contactName: '',
+        contactEmail: '',
+        contactPhone: '',
+        clubId: '',
+        isactive: true
+      });
     } catch (err) {
+      if (err.status === 401 && onUnauthorized) {
+        onUnauthorized();
+        return;
+      }
       setError(err);
     } finally {
       setSaving(false);
@@ -82,9 +155,90 @@ function TheatreCreatePage({ onCancel }) {
             onChange={handleChange}
             fullWidth
             margin="normal"
-            required
+            error={!!fieldErrors.name}
+            helperText={fieldErrors.name}
           />
-          <FormControl fullWidth margin="normal" required>
+          <TextField
+            label="Descripción"
+            name="description"
+            value={form.description}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+          />
+          <TextField
+            label="Dirección"
+            name="address"
+            value={form.address}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+            error={!!fieldErrors.address}
+            helperText={fieldErrors.address}
+          />
+          <TextField
+            label="Ciudad"
+            name="city"
+            value={form.city}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+            error={!!fieldErrors.city}
+            helperText={fieldErrors.city}
+          />
+          <TextField
+            label="País"
+            name="country"
+            value={form.country}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+            error={!!fieldErrors.country}
+            helperText={fieldErrors.country}
+          />
+          <TextField
+            label="Nombre de contacto"
+            name="contactName"
+            value={form.contactName}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+            error={!!fieldErrors.contactName}
+            helperText={fieldErrors.contactName}
+          />
+          <TextField
+            label="Email de contacto"
+            name="contactEmail"
+            value={form.contactEmail}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+            error={!!fieldErrors.contactEmail}
+            helperText={fieldErrors.contactEmail}
+          />
+          <TextField
+            label="Teléfono de contacto"
+            name="contactPhone"
+            value={form.contactPhone}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+            error={!!fieldErrors.contactPhone}
+            helperText={fieldErrors.contactPhone || 'Ejemplo: +34123456789'}
+          />
+          <FormControlLabel
+            control={
+              <Switch
+                checked={form.isactive}
+                onChange={handleChange}
+                name="isactive"
+                color="primary"
+              />
+            }
+            label={form.isactive ? 'Activo' : 'Inactivo'}
+            sx={{ mt: 2 }}
+          />
+          <FormControl fullWidth margin="normal" error={!!fieldErrors.clubId}>
             <InputLabel id="club-select-label">Club/Empresa</InputLabel>
             <Select
               labelId="club-select-label"
@@ -112,6 +266,9 @@ function TheatreCreatePage({ onCancel }) {
                 </MenuItem>
               ))}
             </Select>
+            {fieldErrors.clubId && (
+              <Typography variant="caption" color="error">{fieldErrors.clubId}</Typography>
+            )}
             {loadingClubs && <CircularProgress size={20} sx={{ ml: 2 }} />}
           </FormControl>
           <Box mt={2} display="flex" justifyContent="flex-end" gap={1}>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { fetchResourceDetail, updateResource } from '../services/api';
+import { fetchResourceDetail, updateResource, fetchResourceList } from '../services/api';
 import {
   Box,
   Typography,
@@ -15,7 +15,7 @@ import {
 } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 
-function SalaEditPage({ id, onCancel }) {
+function SalaEditPage({ id, onCancel, teatroId }) {
   const [sala, setSala] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -23,6 +23,8 @@ function SalaEditPage({ id, onCancel }) {
   const [form, setForm] = useState({ name: '' });
   const [success, setSuccess] = useState(false);
   const [confirmCancel, setConfirmCancel] = useState(false);
+  const [nameError, setNameError] = useState('');
+  const [salas, setSalas] = useState([]);
 
   useEffect(() => {
     if (id) {
@@ -36,21 +38,36 @@ function SalaEditPage({ id, onCancel }) {
     } else {
       setLoading(false);
     }
+    // Cargar salas existentes para validar duplicados
+    fetchResourceList('sala').then(setSalas);
   }, [id]);
 
   const handleChange = e => {
     setForm({ ...form, [e.target.name]: e.target.value });
+    if (e.target.name === 'name') setNameError('');
   };
 
   const handleSubmit = async e => {
     e.preventDefault();
-    setSaving(true);
+    setNameError('');
     setError(null);
     setSuccess(false);
+    // Validar nombre vacío
+    if (!form.name.trim()) {
+      setNameError('El nombre es obligatorio');
+      return;
+    }
+    // Validar duplicado (excepto la sala actual)
+    if (salas.some(s => s.teatroId === teatroId && s.name.trim().toLowerCase() === form.name.trim().toLowerCase() && s.id !== id)) {
+      setNameError('Ya existe una sala con ese nombre en este teatro');
+      return;
+    }
+    setSaving(true);
     try {
       if (id) {
-        await updateResource('sala', id, form);
+        await updateResource('sala', id, { ...form, teatroId });
         setSuccess(true);
+        if (onCancel) onCancel(); // Cierra el diálogo y refresca la lista
       }
     } catch (err) {
       setError(err);
@@ -88,7 +105,8 @@ function SalaEditPage({ id, onCancel }) {
             onChange={handleChange}
             fullWidth
             margin="normal"
-            required
+            error={!!nameError}
+            helperText={nameError}
           />
           <Box mt={2} display="flex" justifyContent="flex-end" gap={1}>
             <Button

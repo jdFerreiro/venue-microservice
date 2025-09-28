@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { fetchResourceList } from '../services/api';
+import { fetchClubs } from '../services/clubs';
 import {
   Box,
   Typography,
@@ -30,7 +31,9 @@ import { deleteResource } from '../services/api';
 
 function TheatresMasterPage() {
   const [theatres, setTheatres] = useState([]);
+  const [clubs, setClubs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingClubs, setLoadingClubs] = useState(true);
   const [error, setError] = useState(null);
   const [openCreate, setOpenCreate] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
@@ -74,6 +77,11 @@ function TheatresMasterPage() {
 
   useEffect(() => {
     fetchList();
+    setLoadingClubs(true);
+    fetchClubs()
+      .then(setClubs)
+      .catch(() => setClubs([]))
+      .finally(() => setLoadingClubs(false));
     // eslint-disable-next-line
   }, []);
 
@@ -117,24 +125,46 @@ function TheatresMasterPage() {
             <TableRow>
               {/* <TableCell>ID</TableCell> */}
               <TableCell>Nombre</TableCell>
+              <TableCell>Club</TableCell>
               <TableCell align="center">Acciones</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {theatres.map(theatre => (
-              <TableRow key={theatre.id}>
-                {/* <TableCell>{theatre.id}</TableCell> */}
-                <TableCell>{theatre.name}</TableCell>
-                <TableCell align="center">
-                  <IconButton color="primary" title="Editar" onClick={() => handleOpenEdit(theatre.id)}>
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton color="error" title="Eliminar" onClick={() => handleOpenDelete(theatre.id)}>
-                    <DeleteIcon />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
+            {theatres.map(theatre => {
+              const club = clubs.find(c => c.id === theatre.clubId);
+              return (
+                <TableRow key={theatre.id}>
+                  {/* <TableCell>{theatre.id}</TableCell> */}
+                  <TableCell>{theatre.name}</TableCell>
+                  <TableCell>
+                    {club ? (
+                      <Box display="flex" alignItems="center" gap={1}>
+                        {club.logo ? (
+                          <img
+                            src={club.logo.startsWith('data:') ? club.logo : `data:image/*;base64,${club.logo}`}
+                            alt={club.name}
+                            style={{ width: 32, height: 32, objectFit: 'contain', borderRadius: 4 }}
+                          />
+                        ) : (
+                          <Box sx={{ width: 32, height: 32, bgcolor: '#eee', borderRadius: 4 }} />
+                        )}
+                        <span>{club.name}</span>
+                      </Box>
+                    ) : (
+                      <em>Sin club</em>
+                    )}
+                  </TableCell>
+                  <TableCell align="center">
+                    <IconButton color="primary" title="Editar" onClick={() => handleOpenEdit(theatre.id)}>
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton color="error" title="Eliminar" onClick={() => handleOpenDelete(theatre.id)}>
+                      <DeleteIcon />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </TableContainer>
@@ -153,8 +183,8 @@ function TheatresMasterPage() {
       <Dialog open={openEdit} onClose={handleCloseEdit} maxWidth="sm" fullWidth>
         <DialogTitle>Editar Teatro</DialogTitle>
         <DialogContent>
-          {/* Se pasa el id como prop y se usa en TheatreEditPage */}
-          <TheatreEditPageWrapper id={editId} />
+          {/* Se pasa el id y onCancel como prop y se usa en TheatreEditPage */}
+          <TheatreEditPageWrapper id={editId} onCancel={handleCloseEdit} />
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseEdit}>Cerrar</Button>
@@ -173,9 +203,12 @@ function TheatresMasterPage() {
       <Dialog open={openEdit} onClose={handleCloseEdit} maxWidth="sm" fullWidth>
         <DialogTitle>Editar Teatro</DialogTitle>
         <DialogContent>
-          {/* Se pasa el id como prop y se usa en TheatreEditPage */}
-          <TheatreEditPageWrapper id={editId} />
+          {/* Se pasa el id y onCancel como prop y se usa en TheatreEditPage */}
+          <TheatreEditPageWrapper id={editId} onCancel={handleCloseEdit} />
         </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseEdit}>Cerrar</Button>
+        </DialogActions>
       </Dialog>
 
       {/* Diálogo de confirmación de eliminación */}
@@ -202,8 +235,8 @@ function TheatresMasterPage() {
 }
 
 // Wrapper para pasar id como prop en vez de usar useParams
-function TheatreEditPageWrapper({ id }) {
-  return <TheatreEditPage id={id} />;
+function TheatreEditPageWrapper({ id, onCancel }) {
+  return <TheatreEditPage id={id} onCancel={onCancel} />;
 }
 
 export default TheatresMasterPage;
