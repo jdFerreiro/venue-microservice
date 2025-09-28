@@ -54,7 +54,6 @@ function SalasMasterPage() {
 
   // Cargar salas filtradas por teatro
   const fetchList = () => {
-    console.log('Fetching salas for teatroId:', selectedTheatre);
     if (!selectedTheatre) {
       setSalas([]);
       setLoading(false);

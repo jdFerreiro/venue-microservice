@@ -70,7 +70,6 @@ export async function createSector(data) {
   return response.json();
 }
 export async function createSala(data) {
-  console.log('Creating sala with data:', JSON.stringify(data));
   const response = await fetch(`${API_BASE_URL}/sala`, {
     method: 'POST',
     headers: {
@@ -106,7 +105,6 @@ export async function deleteResource(endpoint, id) {
 
 export async function createTeatro(data) {
   const jsonBody = JSON.stringify(data);
-  console.log('Creating teatro with data:', jsonBody);
   const response = await fetch(`${API_BASE_URL}/teatro`, {
     method: 'POST',
     headers: {
