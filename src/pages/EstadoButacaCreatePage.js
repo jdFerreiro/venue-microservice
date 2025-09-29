@@ -4,7 +4,7 @@ import { Box, TextField, Button, Alert, Dialog, DialogTitle, DialogContent, Dial
 import SaveIcon from '@mui/icons-material/Save';
 
 function EstadoButacaCreatePage({ onCancel, onSuccess }) {
-  const [form, setForm] = useState({ nombre: '', descripcion: '' });
+  const [form, setForm] = useState({ name: '' });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
@@ -20,9 +20,9 @@ function EstadoButacaCreatePage({ onCancel, onSuccess }) {
     setError(null);
     setSuccess(false);
     try {
-      await createEstadoButaca(form);
+      await createEstadoButaca({ name: form.name });
       setSuccess(true);
-      setForm({ nombre: '', descripcion: '' });
+      setForm({ name: '', descripcion: '' });
       if (onSuccess) onSuccess();
     } catch (err) {
       setError(err);
@@ -46,20 +46,12 @@ function EstadoButacaCreatePage({ onCancel, onSuccess }) {
         <form onSubmit={handleSubmit}>
           <TextField
             label="Nombre"
-            name="nombre"
-            value={form.nombre}
+            name="name"
+            value={form.name}
             onChange={handleChange}
             fullWidth
             margin="normal"
             required
-          />
-          <TextField
-            label="Descripción"
-            name="descripcion"
-            value={form.descripcion}
-            onChange={handleChange}
-            fullWidth
-            margin="normal"
           />
           <Box mt={2} display="flex" justifyContent="flex-end" gap={1}>
             <Button variant="outlined" color="secondary" onClick={handleCancel} disabled={saving}>Cancelar</Button>

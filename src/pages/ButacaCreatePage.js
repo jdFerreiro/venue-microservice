@@ -19,7 +19,8 @@ import {
 import SaveIcon from '@mui/icons-material/Save';
 
 function ButacaCreatePage({ onCancel, sectorId, estadosButaca = [] }) {
-  const [form, setForm] = useState({ name: '', estadoButacaId: '' });
+  // DTO: sectorId, row, number, statusId
+  const [form, setForm] = useState({ row: '', number: '', statusId: '' });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
@@ -35,11 +36,21 @@ function ButacaCreatePage({ onCancel, sectorId, estadosButaca = [] }) {
     setError(null);
     setSuccess(false);
     try {
-      await createButaca({ ...form, sectorId });
+      await createButaca({
+        sectorId: String(sectorId),
+        row: form.row,
+        number: form.number,
+        statusId: Number(form.statusId)
+      });
       setSuccess(true);
-      setForm({ name: '', estadoButacaId: '' });
+      setForm({ row: '', number: '', statusId: '' });
+      if (onCancel) onCancel(); // Cierra el diálogo al guardar correctamente
     } catch (err) {
-      setError(err);
+      let msg = err && err.message ? err.message : 'Error al crear butaca';
+      if (msg.toLowerCase().includes('ya existe')) {
+        msg = 'Ya existe una butaca con esa fila y número en este sector.';
+      }
+      setError({ message: msg });
     } finally {
       setSaving(false);
     }
@@ -61,26 +72,37 @@ function ButacaCreatePage({ onCancel, sectorId, estadosButaca = [] }) {
         {error && <Alert severity="error" sx={{ mb: 2 }}>{error.message}</Alert>}
         <form onSubmit={handleSubmit}>
           <TextField
-            label="Nombre"
-            name="name"
-            value={form.name}
+            label="Fila"
+            name="row"
+            value={form.row}
             onChange={handleChange}
             fullWidth
             margin="normal"
             required
+            inputProps={{ maxLength: 10 }}
+          />
+          <TextField
+            label="Número"
+            name="number"
+            value={form.number}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+            required
+            inputProps={{ maxLength: 10 }}
           />
           <FormControl fullWidth margin="normal" required>
             <InputLabel id="estado-butaca-label">Estado</InputLabel>
             <Select
               labelId="estado-butaca-label"
-              name="estadoButacaId"
-              value={form.estadoButacaId}
+              name="statusId"
+              value={form.statusId}
               label="Estado"
               onChange={handleChange}
             >
               <MenuItem value=""><em>Seleccione un estado</em></MenuItem>
               {estadosButaca.map(e => (
-                <MenuItem key={e.id} value={e.id}>{e.nombre}</MenuItem>
+                <MenuItem key={e.id} value={e.id}>{e.name}</MenuItem>
               ))}
             </Select>
           </FormControl>

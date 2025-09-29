@@ -4,7 +4,7 @@ import { Box, TextField, Button, Alert, Dialog, DialogTitle, DialogContent, Dial
 import SaveIcon from '@mui/icons-material/Save';
 
 function EstadoSectorCreatePage({ onCancel, onSuccess }) {
-  const [form, setForm] = useState({ nombre: '', descripcion: '' });
+  const [form, setForm] = useState({ name: '' });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
@@ -20,12 +20,48 @@ function EstadoSectorCreatePage({ onCancel, onSuccess }) {
     setError(null);
     setSuccess(false);
     try {
-      await createEstadoSector(form);
+      await createEstadoSector({ name: form.name });
       setSuccess(true);
-      setForm({ nombre: '', descripcion: '' });
+      setForm({ name: '', descripcion: '' });
       if (onSuccess) onSuccess();
     } catch (err) {
-      setError(err);
+      let msg = '';
+      if (err && typeof err === 'object') {
+        if (Array.isArray(err.message)) {
+          msg = err.message.join(' | ');
+        } else if (typeof err.message === 'string') {
+          try {
+            const parsed = JSON.parse(err.message);
+            if (parsed && parsed.message) {
+              msg = Array.isArray(parsed.message) ? parsed.message.join(' | ') : parsed.message;
+            } else {
+              msg = err.message;
+            }
+          } catch {
+            msg = err.message;
+          }
+        } else if (err.message) {
+          msg = JSON.stringify(err.message);
+        } else if (err.error) {
+          msg = err.error;
+        } else {
+          msg = JSON.stringify(err);
+        }
+      } else if (typeof err === 'string') {
+        try {
+          const parsed = JSON.parse(err);
+          if (parsed && parsed.message) {
+            msg = Array.isArray(parsed.message) ? parsed.message.join(' | ') : parsed.message;
+          } else {
+            msg = err;
+          }
+        } catch {
+          msg = err;
+        }
+      } else {
+        msg = 'Error desconocido';
+      }
+      setError({ ...err, message: msg });
     } finally {
       setSaving(false);
     }
@@ -42,24 +78,22 @@ function EstadoSectorCreatePage({ onCancel, onSuccess }) {
     <Box mt={2}>
       <Paper elevation={0} sx={{ p: 2 }}>
         {success && <Alert severity="success" sx={{ mb: 2 }}>¡Estado creado correctamente!</Alert>}
-        {error && <Alert severity="error" sx={{ mb: 2 }}>{error.message}</Alert>}
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {Array.isArray(error.message)
+              ? error.message.map((msg, idx) => <div key={idx}>{msg}</div>)
+              : error.message}
+          </Alert>
+        )}
         <form onSubmit={handleSubmit}>
           <TextField
             label="Nombre"
-            name="nombre"
-            value={form.nombre}
+            name="name"
+            value={form.name}
             onChange={handleChange}
             fullWidth
             margin="normal"
             required
-          />
-          <TextField
-            label="Descripción"
-            name="descripcion"
-            value={form.descripcion}
-            onChange={handleChange}
-            fullWidth
-            margin="normal"
           />
           <Box mt={2} display="flex" justifyContent="flex-end" gap={1}>
             <Button variant="outlined" color="secondary" onClick={handleCancel} disabled={saving}>Cancelar</Button>

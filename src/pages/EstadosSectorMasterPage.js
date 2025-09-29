@@ -39,10 +39,23 @@ function EstadosSectorMasterPage() {
     setError(null);
     try {
       const data = await fetchResourceList('estado-sector');
-      setEstados(data);
+      if (data === null) {
+        // 401: no mostrar nada ni error
+        setEstados([]);
+        setLoading(false);
+        return;
+      }
+      setEstados(Array.isArray(data) ? data : []);
     } catch (err) {
-      setError(err);
+      // Si es 404 (por status o mensaje), tratar como lista vacía y no mostrar error
+      if ((err.status && err.status === 404) || (err.message && (err.message.includes('404') || err.message.includes('Not Found')))) {
+        setEstados([]);
+        setError(null);
+      } else {
+        setError(err);
+      }
     } finally {
+      setLoading(false);
     }
   };
 
@@ -61,6 +74,11 @@ function EstadosSectorMasterPage() {
     }
   };
 
+  // Si el usuario no está autenticado (401), no renderizar nada
+  if (estados.length === 0 && !loading && !error && sessionStorage.getItem('uToken') === null) {
+    return null;
+  }
+
   return (
     <Box m={3}>
       <Paper elevation={3} sx={{ p: 3 }}>
@@ -73,29 +91,38 @@ function EstadosSectorMasterPage() {
           </Tooltip>
         </Box>
         {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
-        {error && <Alert severity="error" sx={{ mb: 2 }}>{error.message}</Alert>}
         <TableContainer>
           <Table>
             <TableHead>
               <TableRow>
                 {/* <TableCell>ID</TableCell> */}
-                <TableCell>Nombre</TableCell>
-                <TableCell>Descripción</TableCell>
-                <TableCell>Acciones</TableCell>
+                <TableCell style={{ width: '100%' }}>Nombre</TableCell>
+                <TableCell style={{ whiteSpace: 'nowrap' }}>Acciones</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {estados.map((estado) => (
-                <TableRow key={estado.id}>
-                  {/* <TableCell>{estado.id}</TableCell> */}
-                  <TableCell>{estado.nombre}</TableCell>
-                  <TableCell>{estado.descripcion}</TableCell>
-                  <TableCell>
-                    <IconButton color="primary" onClick={() => setEditId(estado.id)}><EditIcon /></IconButton>
-                    <IconButton color="error" onClick={() => setDeleteId(estado.id)}><DeleteIcon /></IconButton>
+              {error ? (
+                <TableRow>
+                  <TableCell colSpan={2} align="center">
+                    <Alert severity="error">Error: {error.message}</Alert>
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : estados.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={2} align="center">No hay estados de sector</TableCell>
+                </TableRow>
+              ) : (
+                estados.map((estado) => (
+                  <TableRow key={estado.id}>
+                    {/* <TableCell>{estado.id}</TableCell> */}
+                    <TableCell style={{ width: '100%' }}>{estado.name}</TableCell>
+                    <TableCell style={{ whiteSpace: 'nowrap' }}>
+                      <IconButton color="primary" onClick={() => setEditId(estado.id)}><EditIcon /></IconButton>
+                      <IconButton color="error" onClick={() => setDeleteId(estado.id)}><DeleteIcon /></IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </TableContainer>

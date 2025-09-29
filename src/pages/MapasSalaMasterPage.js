@@ -88,9 +88,9 @@ function MapasSalaMasterPage() {
       <CircularProgress />
     </Box>
   );
-  if (error) return (
-    <Box m={2}><Alert severity="error">Error: {error.message}</Alert></Box>
-  );
+
+  // Mostrar error solo si realmente ocurre
+  // Mostrar tabla vacía si no hay datos
 
   return (
     <Box m={3}>
@@ -129,27 +129,39 @@ function MapasSalaMasterPage() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {mapas.map(mapa => (
-              <TableRow key={mapa.id}>
-                {/* <TableCell>{mapa.id}</TableCell> */}
-                <TableCell>{mapa.nombre}</TableCell>
-                <TableCell>
-                  {mapa.imagenBase64
-                    ? <img src={`data:image/*;base64,${mapa.imagenBase64}`} alt="Mapa" style={{ maxWidth: 120, maxHeight: 80 }} />
-                    : (mapa.imagenUrl
-                        ? <img src={mapa.imagenUrl} alt="Mapa" style={{ maxWidth: 120, maxHeight: 80 }} />
-                        : '-')}
-                </TableCell>
-                <TableCell align="center">
-                  <IconButton color="primary" title="Editar" onClick={() => handleOpenEdit(mapa.id)}>
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton color="error" title="Eliminar" onClick={() => handleOpenDelete(mapa.id)}>
-                    <DeleteIcon />
-                  </IconButton>
+            {error ? (
+              <TableRow>
+                <TableCell colSpan={3} align="center">
+                  <Alert severity="error">Error: {error.message}</Alert>
                 </TableCell>
               </TableRow>
-            ))}
+            ) : mapas.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={3} align="center">No hay mapas de sala</TableCell>
+              </TableRow>
+            ) : (
+              mapas.map(mapa => (
+                <TableRow key={mapa.id}>
+                  {/* <TableCell>{mapa.id}</TableCell> */}
+                  <TableCell>{mapa.nombre}</TableCell>
+                  <TableCell>
+                    {mapa.imagenBase64
+                      ? <img src={`data:image/*;base64,${mapa.imagenBase64}`} alt="Mapa" style={{ maxWidth: 120, maxHeight: 80 }} />
+                      : (mapa.imagenUrl
+                          ? <img src={mapa.imagenUrl} alt="Mapa" style={{ maxWidth: 120, maxHeight: 80 }} />
+                          : '-')}
+                  </TableCell>
+                  <TableCell align="center">
+                    <IconButton color="primary" title="Editar" onClick={() => handleOpenEdit(mapa.id)}>
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton color="error" title="Eliminar" onClick={() => handleOpenDelete(mapa.id)}>
+                      <DeleteIcon />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </TableContainer>

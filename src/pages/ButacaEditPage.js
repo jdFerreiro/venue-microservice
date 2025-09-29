@@ -20,11 +20,12 @@ import {
 import SaveIcon from '@mui/icons-material/Save';
 
 function ButacaEditPage({ id, onCancel, sectorId, estadosButaca = [] }) {
+  // DTO: sectorId, row, number, statusId
   const [butaca, setButaca] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({ name: '', estadoButacaId: '' });
+  const [form, setForm] = useState({ row: '', number: '', statusId: '' });
   const [success, setSuccess] = useState(false);
   const [confirmCancel, setConfirmCancel] = useState(false);
 
@@ -33,7 +34,11 @@ function ButacaEditPage({ id, onCancel, sectorId, estadosButaca = [] }) {
       fetchResourceDetail('butaca', id)
         .then(data => {
           setButaca(data);
-          setForm({ name: data.name || '', estadoButacaId: data.estadoButacaId || '' });
+          setForm({
+            row: data.row || '',
+            number: data.number || '',
+            statusId: data.statusId || ''
+          });
         })
         .catch(setError)
         .finally(() => setLoading(false));
@@ -53,11 +58,21 @@ function ButacaEditPage({ id, onCancel, sectorId, estadosButaca = [] }) {
     setSuccess(false);
     try {
       if (id) {
-        await updateResource('butaca', id, { ...form, sectorId });
+        await updateResource('butaca', id, {
+          sectorId: String(sectorId),
+          row: form.row,
+          number: form.number,
+          statusId: Number(form.statusId)
+        });
         setSuccess(true);
+        if (onCancel) onCancel(); // Cierra el diálogo al guardar correctamente
       }
     } catch (err) {
-      setError(err);
+      let msg = err && err.message ? err.message : 'Error al actualizar butaca';
+      if (msg.toLowerCase().includes('ya existe')) {
+        msg = 'Ya existe una butaca con esa fila y número en este sector.';
+      }
+      setError({ message: msg });
     } finally {
       setSaving(false);
     }
@@ -87,26 +102,37 @@ function ButacaEditPage({ id, onCancel, sectorId, estadosButaca = [] }) {
         {success && <Alert severity="success" sx={{ mb: 2 }}>¡Guardado correctamente!</Alert>}
         <form onSubmit={handleSubmit}>
           <TextField
-            label="Nombre"
-            name="name"
-            value={form.name}
+            label="Fila"
+            name="row"
+            value={form.row}
             onChange={handleChange}
             fullWidth
             margin="normal"
             required
+            inputProps={{ maxLength: 10 }}
+          />
+          <TextField
+            label="Número"
+            name="number"
+            value={form.number}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+            required
+            inputProps={{ maxLength: 10 }}
           />
           <FormControl fullWidth margin="normal" required>
             <InputLabel id="estado-butaca-label">Estado</InputLabel>
             <Select
               labelId="estado-butaca-label"
-              name="estadoButacaId"
-              value={form.estadoButacaId}
+              name="statusId"
+              value={form.statusId}
               label="Estado"
               onChange={handleChange}
             >
               <MenuItem value=""><em>Seleccione un estado</em></MenuItem>
               {estadosButaca.map(e => (
-                <MenuItem key={e.id} value={e.id}>{e.nombre}</MenuItem>
+                <MenuItem key={e.id} value={e.id}>{e.name}</MenuItem>
               ))}
             </Select>
           </FormControl>

@@ -4,7 +4,7 @@ import { Box, TextField, Button, Alert, Dialog, DialogTitle, DialogContent, Dial
 import SaveIcon from '@mui/icons-material/Save';
 
 function EstadoButacaEditPage({ id, onCancel, onSuccess }) {
-  const [form, setForm] = useState({ nombre: '', descripcion: '' });
+  const [form, setForm] = useState({ name: '' });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [saving, setSaving] = useState(false);
@@ -15,7 +15,7 @@ function EstadoButacaEditPage({ id, onCancel, onSuccess }) {
     if (id) {
       fetchResourceDetail('estado-butaca', id)
         .then(data => {
-          setForm({ nombre: data.nombre || '', descripcion: data.descripcion || '' });
+          setForm({ name: data.name || '' });
         })
         .catch(setError)
         .finally(() => setLoading(false));
@@ -35,7 +35,7 @@ function EstadoButacaEditPage({ id, onCancel, onSuccess }) {
     setSuccess(false);
     try {
       if (id) {
-        await updateResource('estado-butaca', id, form);
+        await updateResource('estado-butaca', id, { name: form.name });
         setSuccess(true);
         if (onSuccess) onSuccess();
       }
@@ -69,20 +69,12 @@ function EstadoButacaEditPage({ id, onCancel, onSuccess }) {
         <form onSubmit={handleSubmit}>
           <TextField
             label="Nombre"
-            name="nombre"
-            value={form.nombre}
+            name="name"
+            value={form.name}
             onChange={handleChange}
             fullWidth
             margin="normal"
             required
-          />
-          <TextField
-            label="Descripción"
-            name="descripcion"
-            value={form.descripcion}
-            onChange={handleChange}
-            fullWidth
-            margin="normal"
           />
           <Box mt={2} display="flex" justifyContent="flex-end" gap={1}>
             <Button variant="outlined" color="secondary" onClick={handleCancel} disabled={saving}>Cancelar</Button>

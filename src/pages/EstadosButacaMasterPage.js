@@ -39,7 +39,7 @@ function EstadosButacaMasterPage() {
     setError(null);
     try {
       const data = await fetchResourceList('estado-butaca');
-      setEstados(data);
+      setEstados(Array.isArray(data) ? data : []);
     } catch (err) {
       setError(err);
     } finally {
@@ -80,23 +80,33 @@ function EstadosButacaMasterPage() {
             <TableHead>
               <TableRow>
                 {/* <TableCell>ID</TableCell> */}
-                <TableCell>Nombre</TableCell>
-                <TableCell>Descripción</TableCell>
-                <TableCell>Acciones</TableCell>
+                <TableCell style={{ width: '100%' }}>Nombre</TableCell>
+                <TableCell style={{ whiteSpace: 'nowrap' }}>Acciones</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {estados.map((estado) => (
-                <TableRow key={estado.id}>
-                  {/* <TableCell>{estado.id}</TableCell> */}
-                  <TableCell>{estado.nombre}</TableCell>
-                  <TableCell>{estado.descripcion}</TableCell>
-                  <TableCell>
-                    <IconButton color="primary" onClick={() => setEditId(estado.id)}><EditIcon /></IconButton>
-                    <IconButton color="error" onClick={() => setDeleteId(estado.id)}><DeleteIcon /></IconButton>
+              {error ? (
+                <TableRow>
+                  <TableCell colSpan={2} align="center">
+                    <Alert severity="error">Error: {error.message}</Alert>
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : estados.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={2} align="center">No hay estados de butaca</TableCell>
+                </TableRow>
+              ) : (
+                estados.map((estado) => (
+                  <TableRow key={estado.id}>
+                    {/* <TableCell>{estado.id}</TableCell> */}
+                    <TableCell style={{ width: '100%' }}>{estado.name}</TableCell>
+                    <TableCell style={{ whiteSpace: 'nowrap' }}>
+                      <IconButton color="primary" onClick={() => setEditId(estado.id)}><EditIcon /></IconButton>
+                      <IconButton color="error" onClick={() => setDeleteId(estado.id)}><DeleteIcon /></IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </TableContainer>
