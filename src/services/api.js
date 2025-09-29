@@ -282,7 +282,6 @@ export async function createTeatro(data) {
 const API_BASE_URL = process.env.REACT_APP_VENUE_API_BASE_URL;
 
 function getAuthHeaders() {
-  sessionStorage.setItem('uToken', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2MmM4M2YwZC1kZDI2LTQ1ZjAtOTAzOS05NTc4YjM3N2Q3YTIiLCJlbWFpbCI6ImR1bW15X2FkbWluaXN0cmFkb3JAZXhhbXBsZS5jb20iLCJmaXJzdE5hbWUiOiJEdW1teUFkbWluaXN0cmFkb3IiLCJsYXN0TmFtZSI6IkV4YW1wbGUiLCJyb2xlSWQiOiI0ZWM1ZjY0NS1hYTc1LTRiNmQtYjlkOS02MzIzMjQ4OTU5MTQiLCJyb2xlTmFtZSI6IkFkbWluaXN0cmFkb3IiLCJpYXQiOjE3NTkxNDM3MzQsImV4cCI6MTc1OTE0NzMzNH0.EI6ER2fzOukRGsJ-z0iKI4qCfQ19UQZv2PRJ61VcPUU');
   const token = sessionStorage.getItem('uToken');
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
