@@ -37,7 +37,8 @@ async function fetchButacasBySector(sectorId) {
     },
   });
   if (!response.ok) throw new Error('Error al obtener butacas del sector');
-  return response.json();
+  const data = await response.json();
+  return data;
 }
 import ButacaCreatePage from './ButacaCreatePage';
 import ButacaEditPage from './ButacaEditPage';
@@ -252,24 +253,21 @@ function ButacasMasterPage() {
                 <TableCell colSpan={4} align="center">No hay butacas</TableCell>
               </TableRow>
             ) : (
-              butacas.map(butaca => {
-                const estado = estadosButaca.find(e => e.id === butaca.statusId);
-                return (
-                  <TableRow key={butaca.id}>
-                    <TableCell>{butaca.row}</TableCell>
-                    <TableCell>{butaca.number}</TableCell>
-                    <TableCell>{estado ? estado.name : '-'}</TableCell>
-                    <TableCell align="center">
-                      <IconButton color="primary" title="Editar" onClick={() => handleOpenEdit(butaca.id)}>
-                        <EditIcon />
-                      </IconButton>
-                      <IconButton color="error" title="Eliminar" onClick={() => handleOpenDelete(butaca.id)}>
-                        <DeleteIcon />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                );
-              })
+              butacas.map(butaca => (
+                <TableRow key={butaca.id}>
+                  <TableCell>{butaca.row}</TableCell>
+                  <TableCell>{butaca.number}</TableCell>
+                  <TableCell>{butaca.status ? butaca.status.name : '-'}</TableCell>
+                  <TableCell align="center">
+                    <IconButton color="primary" title="Editar" onClick={() => handleOpenEdit(butaca.id)}>
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton color="error" title="Eliminar" onClick={() => handleOpenDelete(butaca.id)}>
+                      <DeleteIcon />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))
             )}
           </TableBody>
         </Table>
